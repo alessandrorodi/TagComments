@@ -21,7 +21,6 @@ The first part of *textViewDidChange* method fixes the comment box's height depe
 
 *CustomColoredLabel* is a customized [TTTAttributedLabel](https://github.com/TTTAttributedLabel/TTTAttributedLabel) class. It is coded in the goal of recognizing strings starting with *@* or *#*. It colors them with a defined color and also provides a mechanism to push a view controller when clicking on them.
 
-
 --
 
 Any questions ? E-mail me at *alrodi@gymever.com*
