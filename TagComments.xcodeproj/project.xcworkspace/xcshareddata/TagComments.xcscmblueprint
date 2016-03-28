@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "C89B58A795DDCCCDED942A8A7D3D6A6DCF270638",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "765170F2D4E3A5D9F83699BF78E72F6EB12E28AB" : 0,
+    "C89B58A795DDCCCDED942A8A7D3D6A6DCF270638" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "2C8E872B-8D84-4731-9CD0-E8CAF0099121",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "765170F2D4E3A5D9F83699BF78E72F6EB12E28AB" : "gymever-ios\/",
+    "C89B58A795DDCCCDED942A8A7D3D6A6DCF270638" : "TagComments\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "TagComments",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "TagComments.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/bitbucket.org\/alrodi\/gymever-ios.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "765170F2D4E3A5D9F83699BF78E72F6EB12E28AB"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/alessandrorodi\/TagComments.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C89B58A795DDCCCDED942A8A7D3D6A6DCF270638"
+    }
+  ]
+}

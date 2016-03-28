@@ -7,102 +7,47 @@
 //
 
 #import "CommentsTableViewController.h"
-#import "GymEverAPI.h"
-#import "UIAlertView+error.h"
 #import "CommentCell.h"
-#import "ProfileViewController.h"
-#import "GymEverAPI.h"
-#import "AppDelegate.h"
-#import <Crashlytics/Crashlytics.h>
-#import "Haneke.h"
 #import <QuartzCore/QuartzCore.h>
 #import "NSDate+PrettyDate.h"
-
-#import "EGOCache.h"
-#import "UIButton+Extensions.h"
-
-#import "TYMActivityIndicatorView.h"
 
 #import "TagTableView.h"
 #import "SmallUserTableCell.h"
 
 @interface CommentsTableViewController ()
 {
-
-    TYMActivityIndicatorView *navBarActivityIndicator;
-    
-    NSMutableArray *userProfilePictureURLS;
-    NSMutableArray *usernames;
-    
-
-    NSMutableArray *heightForRowArray;
-    
-    NSMutableDictionary *cachedProfilePicImages;
-    
-    NSOperationQueue *operationQueue;
-    
-    NSDateFormatter *_cellFormatter;
-    NSDateFormatter *_dbDateFormatter;
-    
-    HPGrowingTextView *_cellTextView;
-        
-    int _commentOffset;
-    
-    NSString *_currentTime;
-
+    //The array to search in for when writing a string with @ or #
     NSArray *cachedFollowingArray;
     
-    UILabel *_modelLabel;
-    NSString * _followingCachedKey;
-    NSString *_cacheStoredKey;
-    UIFont *_mainFont;
+    //Formatting the date
+    NSDateFormatter *_dbDateFormatter;
     
     //Array for displaying users(tag)
     NSArray *_filtered;
-    NSArray *_selectedFiltered;
     
+    //The table view that displays the users that match with the current string following '@' or '#'
     TagTableView *tagTableView;
     
-    NSMutableArray *selectedUsers;
-
+    //Most recent string changed by the text view
     NSString *_lastTextChanged;
     
+    //Showing 'add a comment..' in UITEXTVIEW (No default placeholder attribute :( )
     UILabel *_placeholderLabel;
 
-    
-    NSMutableArray *taggedUsersArrays;
-    
-    //Attributes for username label
-    NSMutableDictionary *mutableLinkAttributes;
-    NSMutableDictionary *mutableActiveLinkAttributes;
-    
     //Used to cache cell heights
     NSMutableDictionary *offscreenCells;
-    
-    bool didbecomefirstresponder;
-    
-    
-    //To get the good width for comment text view
-    AppDelegate *appDelegate;
-    
+
+    //Keyboard size in screen.
     CGRect keyboardBounds;
 }
 @end
 
 @implementation CommentsTableViewController
 
-//- (id)initWithStyle:(UITableViewStyle)style
-//{
-//    //self = [super initWithStyle:style];
-//    if (self) {
-//        // Custom initialization
-//    }
-//    return self;
-//}
 
-- (void)scrollViewDidScroll:(UIScrollView *)aScrollView {
-    
-}
+/**
+ * Toggling keyboard if we begin to scroll through the comments
+ */
 -(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
     if([scrollView isEqual:self.tableView])
@@ -110,33 +55,10 @@
 
 }
 
--(void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
-    self.screenName = @"Comments Table View Controller";
-    
-    [self.tableView setDelegate:self];
-    [self.tableView setDataSource:self];
-    
-    /*if(!didbecomefirstresponder){
-        didbecomefirstresponder = YES;
-        [self.commentTextView becomeFirstResponder];
-    }*/
-
-}
-
-
-//Sets the current device timezone with the dates
--(void)initializeCellFormatter
-{
-    _cellFormatter = [[NSDateFormatter alloc]init];
-    NSInteger seconds = [[NSTimeZone localTimeZone]secondsFromGMT]/3600;
-    DebugLog(@"TIMEZONE OF THIS IPHONE : %ld",(long)seconds);
-    [_cellFormatter setTimeZone:[NSTimeZone localTimeZone]];
-    [_cellFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-}
-
-//Since the server's timezone is chicago, we have to set the timezone of the database value.
+/**
+ * Setting timezone of your database
+ * (Eg. An example back-end here with a server with Chicago's timezone.
+ */
 -(void)initializeDbDateFormatter
 {
     _dbDateFormatter = [[NSDateFormatter alloc] init];
@@ -144,57 +66,86 @@
     [_dbDateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
 }
 
+/**
+ * Initialize the table view
+ */
+-(void)initializeTableView{
+    self.tableView.delegate = self;
+    self.tableView.dataSource =self;
+    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
+}
+
+
+/**
+ * Initialize various stuff for the screen to load properly
+ */
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    offscreenCells = [[NSMutableDictionary alloc]init];
-    [self setCommentButtonShadow];
-    self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
-    [self setBoxViewShadow:self.navigationView];
-    [self.backButton setHitTestEdgeInsets:UIEdgeInsetsMake(-30, -30, -30, -30)];
-
-    [self initializeCellFormatter];
+    
+    //Loading table view
+    [self initializeTableView];
+    
+    //Initializing date formatter
     [self initializeDbDateFormatter];
-    [self initializeModelLabel];
-    _currentTime = [_dbDateFormatter stringFromDate:[NSDate date]];
-   self.nbOfComments = @"0";
     
-    DebugLog(@"%@ nb of comments",self.nbOfComments);
-    
-    operationQueue = [NSOperationQueue new];
-    self.tableView.delegate = self;
-    self.tableView.dataSource =self;
-    
-    
-    
-    //[self initializeHPGrowingTextView];
-    _mainFont = self.commentTextView.font;
-    appDelegate = (AppDelegate*)[UIApplication sharedApplication].delegate;
-    [self loadMediaCommentCount];
-
     if(!self.commentsArray){
-                self.commentsArray = [[NSMutableArray alloc]init];
-                _commentOffset = 0;
-                [self loadCommentsWithOffset:[[NSString alloc]initWithFormat:@"%d",_commentOffset] loadMoreComments:NO];
-                
-    }else{
-        self.commentsArray = [self.commentsArray mutableCopy];
-        _commentOffset = (int)[self.commentsArray count];
-        [self.tableView reloadData];
+        self.commentsArray = [[NSMutableArray alloc]init];
+         //Do anything here to load your current comments
     }
     
+    //Loading cells array for autolayout cell height adjustment
+    offscreenCells = [[NSMutableDictionary alloc]init];
+
+    
+    //Manually setting the frame of the comment text view ontainer
     [self.commentTextViewContainerView setFrame:CGRectMake(self.commentTextViewContainerView.frame.origin.x, ([[UIScreen mainScreen] preferredMode].size.height/[[UIScreen mainScreen] scale])-self.commentTextViewContainerView.frame.size.height, self.commentTextViewContainerView.frame.size.width, self.commentTextViewContainerView.frame.size.height)];
     
     
+    //Initialize our comment text view
     [self initializeNormalTextview];
+    
+    //Getting cached array (from followingArray.json)
     cachedFollowingArray = [self getSortedFollowingArray];
 
 
-
-
+    //Disabling auto correct to explicitly show the function of this project
+    [self.commentTextView setAutocorrectionType:UITextAutocorrectionTypeNo];
+    
 
 }
 
+
+/**
+ * Parsing JSON from a file.
+ */
+-(NSArray*)dictionaryWithContentsOfJSONString:(NSString*)path{
+    NSData* data = [NSData dataWithContentsOfFile:path];
+    __autoreleasing NSError* error = nil;
+    id result = [NSJSONSerialization JSONObjectWithData:data
+                                                options:kNilOptions error:&error];
+    if (error != nil) return nil;
+    return result;
+}
+
+
+/**
+ * Gets the array to display when we type a string follow '@' or '#'
+ * (Normally you would load this from your back-end; notice here how it's loaded from followingArray.json)
+ * /return The array of all the users you're following
+ */
+-(NSMutableArray*)getSortedFollowingArray{
+    //Parsing JSON from local file
+    NSMutableArray *sortedFollowingArray;
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"followingArray" ofType:@"json"];
+    sortedFollowingArray = [[self dictionaryWithContentsOfJSONString:path] mutableCopy];
+    return sortedFollowingArray;
+}
+
+
+/** 
+ * Initializing the text view in the comment container
+ */
 -(void)initializeNormalTextview{
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(keyboardWillShow:)
@@ -210,17 +161,19 @@
     
 
     
-    //self.testCommentTextView = [[UITextView alloc] initWithFrame:CGRectMake(8, 8, 248, 32)];
     [self.commentTextView setDelegate:self];
- //   [self.testCommentTextView setScrollEnabled:NO];
     [self.commentTextView setFont:[UIFont systemFontOfSize:14]];
-        [self.commentTextViewContainerView addSubview:self.commentTextView];
+    [self.commentTextViewContainerView addSubview:self.commentTextView];
+    
+    //Initializing placeholder label
     _placeholderLabel = [[UILabel alloc]init];
     [_placeholderLabel setFrame:CGRectMake(4, 0, self.commentTextView.frame.size.width, self.commentTextView.frame.size.height)];
     [_placeholderLabel setText:NSLocalizedString(@"Add a comment", nil)];
     [_placeholderLabel setTextColor:[UIColor lightGrayColor]];
     [_placeholderLabel setBackgroundColor:[UIColor clearColor]];
     [_placeholderLabel setFont:[UIFont systemFontOfSize:14]];
+    
+    //Adding placeholder label in the text view
     [self.commentTextView addSubview:_placeholderLabel];
     [self.commentTextView sendSubviewToBack:_placeholderLabel];
     [self.commentTextView setBackgroundColor:[UIColor whiteColor]];
@@ -228,91 +181,26 @@
 
 }
 
+/**
+ * Hides placeholder when text is typed in the text view.
+ */
 - (void)textViewDidBeginEditing:(UITextView *)textView
 {
     _placeholderLabel.hidden = YES;
 }
 
+/**
+ * Hides placeholder when text is typed in the text view.
+ */
 - (void)textViewDidEndEditing:(UITextView *)textView
 {
     _placeholderLabel.hidden = ([textView.text length] > 0);
 }
 
 
-
--(void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-}
-
--(void)viewWillDisappear:(BOOL)animated
-{
-    
-    [super viewWillDisappear:animated];
-    [self resignTextView];
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-
- /*   if (self.isMovingFromParentViewController) {
-         [self.tableView setDelegate:nil];
-         [self.tableView setDataSource:nil];
-    }*/
-}
-
-
-
-//The comment text view ( to add a comment )
--(void)initializeHPGrowingTextView
-{
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillShow:)
-                                                 name:UIKeyboardWillShowNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(keyboardWillHide:)
-                                                 name:UIKeyboardWillHideNotification
-                                               object:nil];
-    
-    self.commentGrowingTextView = [[HPGrowingTextView alloc] initWithFrame:CGRectMake(8, 8, 264, 40)];
-
-    
-    self.commentGrowingTextView.isScrollable = NO;
-    self.commentGrowingTextView.contentInset = UIEdgeInsetsMake(0, 5, 0, 5);
-    
-	self.commentGrowingTextView.minNumberOfLines = 1;
-	self.commentGrowingTextView.maxNumberOfLines = 6;
-    // you can also set the maximum height in points with maxHeight
-    self.commentGrowingTextView.maxHeight = 200.0f;
-	self.commentGrowingTextView.returnKeyType = UIReturnKeySend; //just as an example
-	self.commentGrowingTextView.font = [UIFont systemFontOfSize:14];
-    self.commentGrowingTextView.delegate = self;
-    
-    //Setting delegate to access the internal textview myself
-	self.commentGrowingTextView.internalTextView.delegate = self;
-    self.commentGrowingTextView.internalTextView.scrollIndicatorInsets = UIEdgeInsetsMake(5, 0, 5, 0);
-    self.commentGrowingTextView.internalTextView.keyboardType = UIKeyboardTypeTwitter;
-    self.commentGrowingTextView.backgroundColor = [UIColor whiteColor];
-    self.commentGrowingTextView.textColor = [UIColor blackColor];
-    self.commentGrowingTextView.placeholder = @"Add a comment...";
-   // [self setBoxViewShadow:self.commentGrowingTextView];
-    self.commentGrowingTextView.layer.cornerRadius = 2.0f;
-    self.commentGrowingTextView.layer.borderColor = [UIColor blackColor].CGColor;
-    self.commentGrowingTextView.layer.borderWidth = 0.3f;
-    
-    UIImageView *backgroundImgView = [[UIImageView alloc]init];
-    backgroundImgView.frame = self.commentTextViewContainerView.frame;
-    backgroundImgView.image = [UIImage imageNamed:@"tabbar_background_bottom.png"];
-    
-    // self.commentTableViewTextView.text = @"asdascearsdasdasasdascearsdasdasasdascearsdasdasasdascearsdasdasasdascearsdasdasasdascearsdasdasasdascearsdasdasasdascearsdasdas\n";
-   // DebugLog(@"Static text text view height :%f",self.commentTableViewTextView.frame.size.height);
-   // [self.commentTextViewContainerView setBackgroundColor:[UIColor colorWithRed:223 green:223 blue:223 alpha:1.0]];
-    [self.commentTextViewContainerView addSubview:self.commentGrowingTextView];
- //   [self.commentTextViewContainerView addSubview:backgroundImgView];
-  //  [self.commentTextViewContainerView sendSubviewToBack:backgroundImgView];
-   // self.commentTextViewContainerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
-
-}
+/**
+ * Auto-layout issues
+ */
 -(void)viewDidLayoutSubviews{
     [self.tableView setTranslatesAutoresizingMaskIntoConstraints:YES];
     [self.commentTextViewContainerView setTranslatesAutoresizingMaskIntoConstraints:YES];
@@ -321,19 +209,12 @@
 
 }
 
--(void)resignTextView
-{
-//	[self.commentTextView resignFirstResponder];
-}
--(void)setBoxViewShadow:(UIView*)boxView{
-    //Adds a shadow to boxView
-    boxView.layer.shadowOffset = CGSizeMake(0, 1.25);
-    boxView.layer.shadowColor = [[UIColor blackColor] CGColor];
-    boxView.layer.shadowRadius = 2.0f;
-    boxView.layer.shadowOpacity = 0.40f;
-    boxView.layer.shadowPath = [[UIBezierPath bezierPathWithRect:boxView.layer.bounds] CGPath];
-}
-//Code from Brett Schumann
+#pragma mark - Keyboard functions
+
+/**
+ * Gets the right size of TagTableview depending on keyboard's size.
+ * //some code from Brett Schumann on StackOverflow
+ */
 -(void) keyboardWillShow:(NSNotification *)note{
     // get keyboard size and loctaion
     [[note.userInfo valueForKey:UIKeyboardFrameEndUserInfoKey] getValue: &keyboardBounds];
@@ -373,6 +254,11 @@
     
     [self.tableView setContentOffset:CGPointMake(0, yOffset) animated:NO];
 }
+
+/**
+ * Gets the right size of TagTableview depending on keyboard's size.
+ * //some code from Brett Schumann on StackOverflow
+ */
 -(void) keyboardWillHide:(NSNotification *)note{
     NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
     NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
@@ -399,55 +285,19 @@
 
 
 
-#pragma mark - Keyboard functions
-//////////////
-//Functions that monitor that showing of keyboard. Changing the parent table view frame.
-/*-(void) keyboardWillShow:(NSNotification *)note{
-        // get keyboard size and loctaion
-        CGRect keyboardBounds;
-        [[note.userInfo valueForKey:UIKeyboardFrameEndUserInfoKey] getValue: &keyboardBounds];
-        NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
-        NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
-        
-        // Need to translate the bounds to account for rotation.
-        keyboardBounds = [self.view convertRect:keyboardBounds toView:nil];
-        // get a rect for the textView frame
-        CGRect containerFrame = self.tableView.frame;
-        containerFrame.origin.y = 64;
-        containerFrame.size.height = self.view.bounds.size.height - (keyboardBounds.size.height) -  containerFrame.origin.y;
-        // animations settings
-        [UIView beginAnimations:nil context:NULL];
-        [UIView setAnimationBeginsFromCurrentState:YES];
-        [UIView setAnimationDuration:[duration doubleValue]];
-        [UIView setAnimationCurve:[curve intValue]];
-        
-        // set views with new info
-        self.tableView.frame = containerFrame;
-        [UIView commitAnimations];
-    
-    
-}
+#pragma mark - UITEXTVIEW delegate methods
 
--(void) keyboardWillHide:(NSNotification *)note{
-    NSNumber *duration = [note.userInfo objectForKey:UIKeyboardAnimationDurationUserInfoKey];
-    NSNumber *curve = [note.userInfo objectForKey:UIKeyboardAnimationCurveUserInfoKey];
-    
-    
-    // animations settings
-    [UIView beginAnimations:nil context:NULL];
-    [UIView setAnimationBeginsFromCurrentState:YES];
-    [UIView setAnimationDuration:[duration doubleValue]];
-    [UIView setAnimationCurve:[curve intValue]];
-    
-    // set views with new info
-    self.tableView.frame = CGRectMake(0, 64, [UIScreen mainScreen].bounds.size.width, self.view.bounds.size.height-64);
-    
-    // commit animations
-    [UIView commitAnimations];
-}
-*/
-
-
+/**
+ * UITEXTVIEW delegate method
+ * Method handling the text view size and showing the tag table view when typing string after '@'
+ 
+ The first part of textViewDidChange fixes the comment box's height depending on the text.  
+ 
+ -tagTableView is a custom UITableView class where it displays the users currently matching with what the user is typing in the commentBox.  
+ 
+ _filtered is the array displayed in tagTableView matching the current string in the commentBox.
+ 
+ */
 -(void)textViewDidChange:(UITextView *)textView{
     _placeholderLabel.hidden = ([textView.text length] > 0);
 
@@ -455,7 +305,6 @@
     //[self colorWord];
    CGSize size = [textView sizeThatFits:CGSizeMake(self.commentTextView.frame.size.width, 300)];
     
-    DebugLog(@"Height of textview: %f",size.height);
     if(size.height < 150)
     {
         [self.commentTextView setScrollEnabled:NO];
@@ -477,9 +326,6 @@
         [textView setFrame:frame];
         [self.commentTextViewContainerView setFrame:containerFrame];
         [self.commentButton setFrame:buttonFrame];
-        
-        
-        
         
         [UIView commitAnimations];
         
@@ -541,9 +387,7 @@
                     
                     //Searching the cached following array with a predicate
                     
-                    //Selected filtered is the array to send to the server when we comment.
-                    _selectedFiltered = [cachedFollowingArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"username BEGINSWITH[c] %@ ",stringToSearch]];
-                    
+
                     //Filtered is the array that is displayed in the tableview. (clears when the word is exactly like the one in the table view. Not necessary to show it.)
                     _filtered = [cachedFollowingArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"username BEGINSWITH[c] %@ AND username != %@",stringToSearch,stringToSearch]];
                     
@@ -579,220 +423,11 @@
                 }else [tagTableView removeFromSuperview];
             }else [tagTableView removeFromSuperview];
         }
-        
-        
-        //uncomment this to select all tags
-        
-         
-         NSArray *words=[textView.text componentsSeparatedByString:@" "];
-         
-         for (NSString *word in words) {
-         if ([word hasPrefix:@"@"]) {
-         //Removing the @ prefix
-         
-         //Searching the cached following array with a predicate
-         NSString *stringToSearch = [word substringFromIndex:1];
-         _selectedFiltered = [cachedFollowingArray filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"username == %@ ",stringToSearch]];
-         if([_selectedFiltered count]>0)
-         {
-         
-             DebugLog(@"%@",[_selectedFiltered description]);
 
-       
-         
-         }
-         
-         //else [tagTableView removeFromSuperview];
-         
-         
-         
-         }
-         }
     }
     
 }
 
-
-- (void)growingTextView:(HPGrowingTextView *)growingTextView willChangeHeight:(float)height
-{
-    float diff = (growingTextView.frame.size.height - height);
-    
-    
-    
-    // Create the CABasicAnimation for the shadow
-   // CABasicAnimation *shadowAnimation = [CABasicAnimation animationWithKeyPath:@"shadowPath"];
-  //  shadowAnimation.duration = 0;
-   // shadowAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionLinear]; // Match the easing of the UIView block animation
-  //  shadowAnimation.fromValue = (id)self.commentGrowingTextView.layer.shadowPath;
-    
-    
-   /* [UIView animateWithDuration:0 delay:0 options:UIViewAnimationOptionCurveLinear animations:^{*/
-      
-      
-        CGRect r = self.commentGrowingTextView.frame;
-        r.size.height -= diff;
-        self.commentGrowingTextView.frame = r;
-        //If difference height is decreasing, insert the shadow right away
-       /* if(diff>0)
-            self.commentGrowingTextView.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.commentGrowingTextView.bounds].CGPath;*/
-        
-        CGRect c = self.commentTextViewContainerView.frame;
-        c.size.height -= diff;
-        c.origin.y += diff;
-        self.commentTextViewContainerView.frame = c;
-    
-        CGRect btnFrame = self.commentButton.frame;
-        btnFrame.origin.y -= diff;
-        self.commentButton.frame = btnFrame;
-       
-
-   /* }
-    completion:^(BOOL finished) {
-        //If difference height is increasing, insert the shadow after
-                         if(diff<0)
-                         self.commentGrowingTextView.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.commentGrowingTextView.bounds].CGPath;
-
-         }
-        ];*/
-    
-    
-    
-    
-    
-    // Set the toValue for the animation to the new frame of the view
-   // shadowAnimation.toValue = (id)[UIBezierPath bezierPathWithRect:self.commentGrowingTextView.bounds].CGPath;
-    
-    // Add the shadow path animation
-   // [self.commentGrowingTextView.layer addAnimation:shadowAnimation forKey:@"shadowPath"];
-    
-    // Set the new shadow path
-	
-    
-
-
-}
-
-
-
--(void)loadMediaCommentCount
-{
-    NSString* command = @"showMediaCommentCount";
-    NSMutableDictionary* params =[NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                  command, @"command",
-                                  self.idMedia, @"idMedia",
-                                  nil];
-    
-    
-    //make the call to the web API
-    [[GymEverAPI sharedInstance] commandWithParams:params
-                                      onCompletion:^(NSArray *json) {
-                                          //handle the response
-                                           //DebugLog(@"Currently checking the response");
-                                          //result returned
-                                          
-                      
-                                          for(NSDictionary* res in json)
-                                          {
-                                              
-      
-                                                  if([res objectForKey:@"commentCount"]!= nil)
-                                                  {
-                                                      self.totalNbOfComments = [res objectForKey:@"commentCount"];
-                                                      
-                                                      if([self.totalNbOfComments integerValue]>8){
-                                                          [self showLoadMediaCommentsButton];
-                                                      }
-                                                     
-                                                  }
-                                              
-                                          }
-                                      }];
-}
-
--(void)showLoadMediaCommentsButton{
-    [self.loadMoreCommentsView setHidden:NO];
-    [self.tableView scrollRectToVisible:CGRectMake(0, self.tableView.contentSize.height - self.tableView.bounds.size.height, self.tableView.bounds.size.width, self.tableView.bounds.size.height) animated:NO];
-
-}
--(void)hideLoadMediaCommentButton{
-    [self.loadMoreCommentsView setHidden:YES];
-
-}
--(void)loadCommentsWithOffset:(NSString*)offset loadMoreComments:(bool)isMoreComments{
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
-
-    
-    
-    DebugLog(@"loading comments WITH offset %@",offset);
-    NSString* command = @"showMediaComments";
-    NSMutableDictionary* params =[NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                  command, @"command",
-                                  self.idMedia, @"idMedia",
-                                  offset,@"offset",
-                                  _currentTime,@"firstViewCommentTime",
-                                  nil];
-    
-    
-    //make the call to the web API
-    [[GymEverAPI sharedInstance] commandWithParams:params
-                                      onCompletion:^(NSArray *json) {
-                                          //handle the response
-                                          NSIndexSet *indexes = [NSIndexSet indexSetWithIndexesInRange:
-                                                                 NSMakeRange(0,[json count])];
-                                          [self.commentsArray insertObjects:json atIndexes:indexes];
-                                          _commentOffset += [json count];
-
-                                          int i = 0;
-                                          for(NSDictionary* res in json)
-                                          {
-                                              
-                                              
-                                              
-                                             
-                                                      //Dynamic label size
-                                                      _modelLabel.text =[res objectForKey:@"comment"];
-                                                        CGSize maximumLabelSize = CGSizeMake(228, 1000);
-                                                        CGSize expectedSize = [_modelLabel sizeThatFits:maximumLabelSize];
-                                                        [heightForRowArray insertObject:[NSNumber numberWithFloat:expectedSize.height]atIndex:i];
-                                                      
-                                              
-                                            
-                                          }
-                                          
-                                          
-                                          
-                                          [self enableLoadCommentsButton];
-                                          [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-                                          if(_commentOffset == [self.totalNbOfComments integerValue]) [self hideLoadMediaCommentButton];
-                                          [self.tableView reloadData];
-                                      } onFailure:^(AFHTTPRequestOperation *operation) {
-                                          [self enableLoadCommentsButton];
-                                          [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-
-                                      }];
-    
-}
-
--(void)enableLoadCommentsButton
-{
-    [_loadMoreCommentsButton setEnabled:YES];
-
-}
-
--(void)disableLoadCommentsButton
-{
-    [_loadMoreCommentsButton setEnabled:NO];
-}
-
-
-
-
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 
 #pragma mark - Table view data source
 
@@ -804,23 +439,15 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    
     return [self.commentsArray count];
 }
--(void)tableView:(UITableView *)tableView didEndDisplayingCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    CommentCell *ccell = (CommentCell*)cell;
-    
-    
-    
-    [ccell.loadImageOperation cancel];
-    
-    //scell.userProfilePictureView.image = [UIImage imageNamed:@"noPpic.jpg"];
-}
 
 
 
-
+/*
+ UITABLEVIEW delegate method
+ * some code taken from stack overflow to build the cell height with auto-layour
+ */
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
 
@@ -840,25 +467,11 @@
     }
     
 
-if([self.commentsArray count]>0){
+    if([self.commentsArray count]>0){
+        //Building comment cell to get the right cell height.
+        [self setCommentCell:ccell withIndexPath:indexPath];
     
-                ccell.usernameLabel.text = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"username"];
-                
-                [ccell.usernameLabel addLinkForUsername:ccell.usernameLabel.text];
-                
-                [ccell.usernameLabel setNeedsDisplay];
-                NSString* commentString = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"comment"];
-                
-                ccell.commentLabel.text = commentString;
-    
-                
-   
-                    ccell.idComment = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"idComment"];
-    
-            NSString *createdString = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"created"];
-                ccell.timeLabel.text =   [[_dbDateFormatter dateFromString:createdString] prettyDate];
-    
- }
+    }
 
     [ccell setNeedsDisplay];
 
@@ -892,86 +505,54 @@ if([self.commentsArray count]>0){
     
 }
 
-
-
-
+/*
+ * Building comment cell from the array values.
+ */
+-(void)setCommentCell:(CommentCell*)cell withIndexPath:(NSIndexPath*)indexPath{
+    //Username
+    cell.usernameLabel.text = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"username"];
+    [cell.usernameLabel addLinkForUsername:cell.usernameLabel.text];
+    [cell.usernameLabel setNeedsDisplay];
+    
+    
+    //Setting the text of the comment.
+    NSString* commentString = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"comment"];
+    cell.commentLabel.text = commentString;
+    
+    //Setting the id of comment.
+    cell.idComment = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"idComment"];
+    
+    //Formatting the date from the comment record. (In our case, the date field is called 'created')
+    NSString *createdString = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"created"];
+    cell.timeLabel.text =   [[_dbDateFormatter dateFromString:createdString] prettyDate];
+    
+    //Setting default no profile pic image
+    [cell.profileImageButton setImage:[UIImage imageNamed:@"noPpic.png"] forState:UIControlStateNormal];
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     CommentCell *cell = (CommentCell*)[tableView dequeueReusableCellWithIdentifier:@"CommentCell"];
-    cell.commentLabel.navigationController = self.navigationController;
-    cell.usernameLabel.navigationController = self.navigationController;
+    
+    //Building comment cell.
+    [self setCommentCell:cell withIndexPath:indexPath];
+    
+    //If we want to push a view from the cell directly.
+    cell.commentTableViewController = self;
+    
+    //Setting the delegates and navigation controller for CustomColoredLabel
     cell.commentLabel.delegate = cell.commentLabel;
     cell.usernameLabel.delegate = cell.usernameLabel;
+    cell.commentLabel.navigationController = self.navigationController;
+    cell.usernameLabel.navigationController = self.navigationController;
     
-    cell.idMedia = self.idMedia;
     
-    //TO refresh the comments after having commented
-    cell.commentTableViewController = self;
-   // __block NSBlockOperation *operation = [NSBlockOperation blockOperationWithBlock:^{
-        //if(![operation isCancelled]){
-            
-            cell.usernameLabel.text = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"username"];
-            
-            [cell.usernameLabel addLinkForUsername:cell.usernameLabel.text];
-            
-            [cell.usernameLabel setNeedsDisplay];
-            NSString* commentString = [[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"comment"];
-            
-            cell.commentLabel.text = commentString;
-           
-            
-            CGFloat labelHeight = [[heightForRowArray objectAtIndex:indexPath.row] floatValue];
-            
-            
-            cell.idComment = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"idComment"];
-            
-            NSString *createdString = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"created"];
-            cell.timeLabel.text =   [[_dbDateFormatter dateFromString:createdString] prettyDate];
-            NSString *urlString = [[NSString alloc]initWithFormat:@"%@%@%@",@"https://www.gymever.com/manageLogin/upload/",[[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"profilePicId"],@"-thumb.jpg"];
-            
-            NSURL *url =[NSURL URLWithString:urlString];
-            if(url)
-            {
-                UIImageView *modelImageView = [[UIImageView alloc]init];
-                [modelImageView setFrame:cell.profileImageButton.frame];
-                HNKCacheFormat *format = [HNKCache sharedCache].formats[@"smallUserPicFormat"];
-                modelImageView.hnk_cacheFormat = format;
-                [modelImageView hnk_setImageFromURL:url placeholderImage:nil success:^(UIImage *image) {
-                    [cell.profileImageButton setImage:image forState:UIControlStateNormal];
-                } failure:^(NSError *error) {
-                    [cell.profileImageButton setImage:[UIImage imageNamed:@"noPpic.png"] forState:UIControlStateNormal];
-                }];
-            }else{
-                [cell.profileImageButton setImage:[UIImage imageNamed:@"noPpic.png"]forState:UIControlStateNormal];
-            }
-            
-            
-      //  }
-    //}];
-    
-   // cell.loadImageOperation = operation;
-   // [operationQueue addOperation:operation];
     
     return cell;
     
+  
 }
 
-
--(HNKCacheFormat*)initializeHNKFormat{
-    HNKCacheFormat *format = [HNKCache sharedCache].formats[@"smallUserPicFormat"];
-    if (!format)
-    {
-        format = [[HNKCacheFormat alloc] initWithName:@"smallUserPicFormat"];
-        format.size = CGSizeMake(36, 36);
-        format.scaleMode = HNKScaleModeAspectFill;
-        format.compressionQuality = 1;
-        format.diskCapacity = 50 * 1024 * 1024; // 1MB
-        format.preloadPolicy = HNKPreloadPolicyAll;
-    }
-    
-    return format;
-}
 
 
 
@@ -984,27 +565,15 @@ if([self.commentsArray count]>0){
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     CommentCell *cell = (CommentCell*)[self.tableView cellForRowAtIndexPath:indexPath];
-        ProfileViewController *vc = [[ProfileViewController alloc] initWithNibName:@"ProfileViewController" bundle:nil];
-        vc.username = cell.usernameLabel.text;
-        vc.profileIdUser = [[self.commentsArray objectAtIndex:indexPath.row] objectForKey:@"idUser"];
-        vc.isIphoneUser = NO;
-        [self.navigationController pushViewController:vc animated:YES];
-}
+    DebugLog(@"Open profile that commented this comment !");
 
-- (BOOL)growingTextViewShouldReturn:(HPGrowingTextView *)growingTextView{
-    [self commentButtonTapped:nil];
-    return NO;
-}
-
--(CGFloat)addHeightForRow:(NSString*)comment{
-    _modelLabel.text = comment;
-      CGSize maximumLabelSize = CGSizeMake([UIScreen mainScreen].bounds.size.width, 1000);
-     CGSize expectedSize = [_modelLabel sizeThatFits:maximumLabelSize];
-    return expectedSize.height;
 }
 
 
 
+/**
+ Method when clicking on 'Send' Button
+ */
 - (IBAction)commentButtonTapped:(id)sender {
  
     //Checking if string has characters other than space and new lines so we can post a valid comment
@@ -1012,157 +581,73 @@ if([self.commentsArray count]>0){
     
     if(self.commentTextView && [result length]>0)
     {
-        
-        
-    NSInteger nbComments = [self.nbOfComments integerValue];
-
+        //Setting appropriate number of comments
+        NSInteger nbComments = [self.nbOfComments integerValue];
         nbComments++;
         self.nbOfComments = [[NSString alloc]initWithFormat:@"%ld",(long)nbComments ];
         
-        
-    NSInteger totalNbComments = [self.totalNbOfComments integerValue];
-        totalNbComments++;
-        self.totalNbOfComments = [[NSString alloc]initWithFormat:@"%ld",(long)totalNbComments ];
-        
-        
-        NSMutableDictionary *comment = [NSMutableDictionary dictionaryWithObjectsAndKeys:self.commentTextView.text,@"comment",[[GymEverAPI sharedInstance].user objectForKey:@"username"],@"username",[[GymEverAPI sharedInstance].user objectForKey:@"profilePicId"],@"profilePicId",[_dbDateFormatter stringFromDate:[NSDate date]],@"created", nil];
+        //Set your own comment here
+        NSMutableDictionary *comment = [NSMutableDictionary dictionaryWithObjectsAndKeys:self.commentTextView.text,@"comment",@"yourusername",@"username",@"0",@"profilePicId",[_dbDateFormatter stringFromDate:[NSDate date]],@"created", nil];
 
-
-        [heightForRowArray addObject:[NSNumber numberWithFloat:[self addHeightForRow:self.commentTextView.text]]];
-        
-        
         [self.commentsArray addObject:comment];
         [self.tableView reloadData];
        
         
+        
+        //Back-end method
         NSIndexPath *lastRowIndexPath =[NSIndexPath indexPathForRow:nbComments-1 inSection:0];
-         CommentCell *cell = (CommentCell*)[self.tableView cellForRowAtIndexPath:lastRowIndexPath];
-
+        CommentCell *cell = (CommentCell*)[self.tableView cellForRowAtIndexPath:lastRowIndexPath];
         [self commentMediaRequest:cell withCommentString:self.commentTextView.text];
     
     
-    
+        //Scrolling to bottom if there is more than one comment
         if(nbComments!=-1)
         {
-
             [self scrollToBottom];
-            
         }
     
-   
     }
     
    }
-
+/**
+ * Method to request your back-end and add the relevant information to commentsArray when you get your response from posting a comment in the database.
+ */
 -(void)commentMediaRequest:(CommentCell*)cell withCommentString:(NSString*)commentString
 {
-    NSString* command = @"commentMedia";
-    NSMutableDictionary* params =[NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                  command, @"command",
-                                  [[GymEverAPI sharedInstance].user objectForKey:@"idUser"],@"idUser",
-                                  commentString,@"comment",
-                                  self.idMedia, @"idMedia",
-                                  self.IdUser,@"notifiedIdUser",
-                                  nil];
+    //Request your back-end here to post a comment in the databse. Add the following lines when you get your back-end response.
     
     self.commentTextView.text = @"";
     [self textViewDidChange:self.commentTextView];
-    [self resignTextView];
-    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    [[self.commentsArray lastObject] setValue:@"0" forKey:@"idComment"];
+    [[self.commentsArray lastObject] setValue:@"0" forKey:@"idUser"];
 
-    DebugLog(@"Comment posting");
-    //make the call to the web API
-    [[GymEverAPI sharedInstance] commandWithParams:params
-                                      onCompletion:^(NSArray *json) {
-                                          DebugLog(@"in comment posting");
-                                          
-                                          
-                                              //   dispatch_sync(dispatch_get_main_queue(), ^{
-                                              DebugLog(@"Comment posted");
-                                              
-                                             // [cell.commentActivityIndicator stopAnimating];
-                                              //  });
-
-                                              dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-
-                                              [self.gymEverTableVideoController refreshCommentsAndLikes];
-                                              });
-                                                  NSDictionary* res = json[0];
-                                          
-                                          [[self.commentsArray lastObject] setValue:[res objectForKey:@"idComment"] forKey:@"idComment"];
-                                          [[self.commentsArray lastObject] setValue:[[GymEverAPI sharedInstance].user objectForKey:@"idUser"] forKey:@"idUser"];
-                                          
-                                          
-
-                                              DebugLog(@"id comment:%@",[res objectForKey:@"idComment"]);
-                                              
-                                              DebugLog(@" user id : %@",self.IdUser);
-                                          
-                                          [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-
-                                      } onFailure:^(AFHTTPRequestOperation *operation) {
-                                          if(operation.responseString) DebugLog(@"Comment failed : %@", operation.responseString);
-                                          //[cell.commentActivityIndicator stopAnimating];
-                                          [cell.retryCommentButton setEnabled:true];
-                                          [cell.retryCommentButton setHidden:NO];
-                                          [UIApplication sharedApplication].networkActivityIndicatorVisible = NO;
-
-                                      }];
 }
 
+/**
+ * Method to delete this comment from the database
+ */
 -(void)deleteCommentWithIdComment:(NSString*)idComment atRow:(NSUInteger)row
 {
-    NSString* command = @"deleteComment";
-    NSMutableDictionary* params =[NSMutableDictionary dictionaryWithObjectsAndKeys:
-                                  command, @"command",
-                                  idComment,@"idComment",
-                                 [[self.commentsArray objectAtIndex:row] objectForKey:@"idUser" ],@"idUser",
-                                  self.idMedia, @"idMedia",
-                                  self.IdUser,@"notifiedIdUser",
-                                  nil];
-    
-    
     DebugLog(@"Comment deleting");
-    //make the call to the web API
-    [[GymEverAPI sharedInstance] commandWithParams:params
-                                      onCompletion:^(NSArray *json) {
-                                          
-                                          
-
-                                              dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                                                  
-                                                  [self.gymEverTableVideoController refreshCommentsAndLikes];
-                                              });
-                                              DebugLog(@"Successfully deleted comment");
-                                       
-                                          
-                                          
-                                          
-                                          
-                                          
-                                      }];
 }
 
+/**
+ * UITABLEVIEW delegate method;
+ * Delete comments when editing the table view.
+ */
 -(void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (editingStyle == UITableViewCellEditingStyleDelete) {
         DebugLog(@"Delete comment");
-        //[tableView reloadData];
         
         NSInteger nbComments = [self.nbOfComments integerValue];
         nbComments--;
         self.nbOfComments = [[NSString alloc]initWithFormat:@"%ld",(long)nbComments ];
-        
-        NSInteger totalNbComments = [self.totalNbOfComments integerValue];
-        totalNbComments--;
-        self.totalNbOfComments = [[NSString alloc]initWithFormat:@"%ld",(long)totalNbComments ];
-        
+
         [self.tableView beginUpdates];
         [self deleteCommentWithIdComment:[[self.commentsArray objectAtIndex:indexPath.row]objectForKey:@"idComment" ] atRow:indexPath.row];
         [self.commentsArray removeObjectAtIndex:indexPath.row];
-        [heightForRowArray removeObjectAtIndex:indexPath.row];
         [self.tableView deleteRowsAtIndexPaths:[NSArray arrayWithObject:indexPath] withRowAnimation:UITableViewRowAnimationFade];
-        [operationQueue cancelAllOperations];
         
         [self.tableView endUpdates];
         [self.tableView setEditing:NO];
@@ -1171,10 +656,14 @@ if([self.commentsArray count]>0){
     
 }
 
+/**
+ * UITABLEVIEW delegate method;
+ * Only allow to delete comments if you're the one who wrote it.
+ */
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
     CommentCell *cell = (CommentCell*)[self.tableView cellForRowAtIndexPath:indexPath];
     
-    if(self.isIphoneUserMedia || [cell.usernameLabel.text isEqualToString:[[GymEverAPI sharedInstance].user  objectForKey:@"username"]])
+    if([cell.usernameLabel.text isEqualToString:@"yourusername"])
     return YES;
     else return NO;
 }
@@ -1185,82 +674,35 @@ if([self.commentsArray count]>0){
     return result;
 }
 
-
-
 - (CGFloat)tableView:(UITableView *)tableView estimatedHeightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return 64.0f;
 }
 
-//Attempted method to refresh the comments
--(void)reloadComments{
-    self.nbOfComments = @"0";
-
-}
-
+/**
+ * Method stub to load more comments from database
+ */
 - (IBAction)loadMoreCommentsButtonTapped:(id)sender {
-    
-    [self disableLoadCommentsButton];
-
-        [self loadCommentsWithOffset:[[NSString alloc]initWithFormat:@"%d",_commentOffset] loadMoreComments:YES];
-        
-
-    
+    //When loading more comments
 }
 
-- (IBAction)backButtonTapped:(id)sender {
-    [self.navigationController popViewControllerAnimated:YES];
-}
-
-
--(void)initializeModelLabel
-{
-    _modelLabel = [[CustomColoredLabel alloc]init];
-    _modelLabel.numberOfLines = 0;
-    //MAKE SURE TO MATCH THE STORYBOARD's FONT
-    _modelLabel.font = [UIFont systemFontOfSize:14.0];
-    _modelLabel.lineBreakMode = NSLineBreakByClipping;
-}
-
-#pragma Cache methods for following array ( tag implementation )
-#pragma mark - Caching idUser following array (sorted)
--(void)initializeCacheKeys
-{
-    NSString *idUser = [[GymEverAPI sharedInstance].user objectForKey:@"idUser"];
-    _followingCachedKey = [[NSString alloc]initWithFormat:@"%@followingArray",idUser];
-    _cacheStoredKey = [[NSString alloc]initWithFormat:@"%@followingIsStored",idUser];
-}
-
--(void)cacheFollowingArray:(NSArray* )followingArray{
-    [self initializeCacheKeys];
-    if(followingArray) [[EGOCache globalCache]setObject:followingArray forKey:_followingCachedKey withTimeoutInterval:604800];
-    [[EGOCache globalCache]setObject:[NSNumber numberWithBool:YES] forKey:_cacheStoredKey withTimeoutInterval:604800];
-}
-
--(NSArray*)getSortedFollowingArray{
-    if([self checkIfCacheStored])
-    {
-        return (NSMutableArray*)[[EGOCache globalCache]objectForKey:_followingCachedKey];
-    }
-    return nil;
-}
-
--(BOOL)checkIfCacheStored{
-    [self initializeCacheKeys];
-    if([[EGOCache globalCache]objectForKey:_cacheStoredKey]==[NSNumber numberWithBool:YES])
-        return YES;
-    else return NO;
-}
 
 
 #pragma - mark Table view delegate methods for selecting (tag table view ) 
 
 
+/**
+ * When a name is selected from TagTableView
+ */
 -(void)selectedRowWithUserDetails:(SmallUserTableCell *)cell{
     [tagTableView removeFromSuperview];
     [self addNameToTextViewWithString:cell.smallUserCellView.username];
 }
 
+
+/**
+ * Adds tagged name into the textview
+ */
 -(void)addNameToTextViewWithString:(NSString*)string{
     NSString *text = self.commentTextView.text;
     NSUInteger cursorLocation = [self.commentTextView selectedRange].location;
@@ -1268,19 +710,12 @@ if([self.commentsArray count]>0){
     DebugLog(@"Word %@ at index %d",cursorLocationWord,cursorLocation);
     NSString* firstStringPart = [text substringWithRange:NSMakeRange(0,cursorLocation-cursorLocationWord.length)];
     NSString* secondStringPart;
-   /* if(cursorLocation > text.length){
-    tringPart = @"";
-    }else{*/
-        secondStringPart = [text substringFromIndex:cursorLocation];
+
+    secondStringPart = [text substringFromIndex:cursorLocation];
         
-   /* }*/
     DebugLog(@"FirstPart %@ and Secondpart %@",firstStringPart,secondStringPart);
 
-    //Trim the space (happens after we explicitly select the row after the user presses a spacebar with only one user in table view
-  /*  if([[text substringFromIndex:[text length]-1] isEqualToString:@" "])
-    {
-        self.commentGrowingTextView.internalTextView.text = [self.commentGrowingTextView.internalTextView.text substringToIndex:text.length-1];
-    }*/
+ 
     NSArray *words=[self.commentTextView.text componentsSeparatedByString:@" "];
     NSString *lastword = [words lastObject];
     
@@ -1289,8 +724,6 @@ if([self.commentsArray count]>0){
     
     //Adding a space
     string = [NSString stringWithFormat:@"%@ ",string];
-
-   // self.commentGrowingTextView.internalTextView.text = [[NSString alloc]initWithFormat:@"%@@%@ ",text,string];
     
     self.commentTextView.text = [[NSString alloc]initWithFormat:@"%@%@%@",firstStringPart,string,secondStringPart];
 
@@ -1300,6 +733,9 @@ if([self.commentsArray count]>0){
 
 }
 
+/**
+ * Returns word at a wanted index.
+ */
 - (NSString *) wordAtIndex:(NSInteger) index withString:(NSString*)string{
     __block NSString *result = nil;
     [string enumerateSubstringsInRange:NSMakeRange(0, string.length)
@@ -1314,69 +750,8 @@ if([self.commentsArray count]>0){
 }
 
 
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range
- replacementText:(NSString *)atext {
-    _lastTextChanged = atext;
-    //weird 1 pixel bug when clicking backspace when textView is empty
-    if(![textView hasText] && [atext isEqualToString:@""]) return NO;
-    
-    //Added by bretdabaker: sometimes we want to handle this ourselves
-    if ([self respondsToSelector:@selector(growingTextView:shouldChangeTextInRange:replacementText:)])
-        return [self growingTextView:self.commentGrowingTextView shouldChangeTextInRange:range replacementText:atext];
-    
-    if ([atext isEqualToString:@"\n"]) {
-        if ([self respondsToSelector:@selector(growingTextViewShouldReturn:)]) {
-            if (![self performSelector:@selector(growingTextViewShouldReturn:) withObject:self]) {
-                return YES;
-                
-            } else {
-                [textView resignFirstResponder];
-                return NO;
-            }
-        }
-    }
-    
-    return YES;
-
-}
-/*
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
-        return [self growingTextViewShouldBeginEditing:self.commentGrowingTextView];
-}
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (BOOL)textViewShouldEndEditing:(UITextView *)textView {
-        return [self growingTextViewShouldEndEditing:self.commentGrowingTextView];
-}
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)textViewDidBeginEditing:(UITextView *)textView {
-        [self growingTextViewDidBeginEditing:self.commentGrowingTextView];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)textViewDidEndEditing:(UITextView *)textView {
-        [self growingTextViewDidEndEditing:self.commentGrowingTextView];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-- (void)textViewDidChangeSelection:(UITextView *)textView {
-        [self growingTextViewDidChangeSelection:self.commentGrowingTextView];
-}*/
-
--(void)setCommentButtonShadow{
-    //Adds a shadow to boxView
-   /* self.commentButton.layer.shadowOffset = CGSizeMake(0, 1.25);
-    self.commentButton.layer.shadowColor = [[UIColor blackColor] CGColor];
-    self.commentButton.layer.shadowRadius = 2.0f;
-    self.commentButton.layer.shadowOpacity = 0.40f;
-    self.commentButton.layer.shadowPath = [[UIBezierPath bezierPathWithRect:self.commentButton.layer.bounds] CGPath];*/
-    self.commentButton.layer.cornerRadius = 2;
-    
-}
 @end

@@ -79,14 +79,7 @@
             [localeNameAttributedString drawAtPoint:point];
             
         }
-        /*
-         Draw the current time in the middle column.
-         */
-      //  NSString *timeString = [self.dateFormatter stringFromDate:[NSDate date]];
-       /* if(self.isFollowing) followString = @"Following";
-        NSAttributedString *followAttributedString = [[NSAttributedString alloc] initWithString:followString attributes:mainTextAttributes];
-        point = CGPointMake(MIDDLE_COLUMN_OFFSET, MIDDLE_ROW_TOP);
-        [followAttributedString drawAtPoint:point];*/
+       
         
     }
     

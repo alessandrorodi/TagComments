@@ -7,8 +7,6 @@
 //
 
 #import "CustomColoredLabel.h"
-#import "ProfileViewController.h"
-#import "MediaFeed.h"
 
 
 @implementation CustomColoredLabel
@@ -179,12 +177,8 @@
     
     if([selectedString hasPrefix:@"#"]){
         selectedString = [selectedString substringFromIndex:1];
-        UIStoryboard*  sb = [UIStoryboard storyboardWithName:@"MainStoryboard"
-                                                      bundle:nil];
-        MediaFeed* putvc = [sb instantiateViewControllerWithIdentifier:@"GymEverTableVideoController"];
-        putvc.isHashtagsFeed = YES;
-        putvc.hashtag = selectedString;
-        [self.navigationController pushViewController:putvc animated:YES];
+        DebugLog(@"Will open hashtag page corresponding to : %@!",selectedString);
+
     }else{
         
         if([selectedString hasPrefix:@"@"]){
@@ -193,13 +187,8 @@
             selectedString = [selectedString substringFromIndex:0];
         }
         
-            ProfileViewController *vc = [[ProfileViewController alloc] initWithNibName:@"ProfileViewController" bundle:nil];
-        
-        vc.username = selectedString;
-        vc.taggedUsername = selectedString;
-        vc.isIphoneUser = NO;
-        
-        [self.navigationController pushViewController:vc animated:YES];
+        DebugLog(@"Will open profile page corresponding to : %@!",selectedString);
+
     }
 }
 

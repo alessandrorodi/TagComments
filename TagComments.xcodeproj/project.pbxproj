@@ -9,10 +9,23 @@
 /* Begin PBXBuildFile section */
 		B1AB6CE01CA8A7D6008C67FB /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CDF1CA8A7D6008C67FB /* main.m */; };
 		B1AB6CE31CA8A7D6008C67FB /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CE21CA8A7D6008C67FB /* AppDelegate.m */; };
-		B1AB6CE61CA8A7D6008C67FB /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CE51CA8A7D6008C67FB /* ViewController.m */; };
 		B1AB6CE91CA8A7D6008C67FB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6CE71CA8A7D6008C67FB /* Main.storyboard */; };
 		B1AB6CEB1CA8A7D6008C67FB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6CEA1CA8A7D6008C67FB /* Assets.xcassets */; };
 		B1AB6CEE1CA8A7D6008C67FB /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6CEC1CA8A7D6008C67FB /* LaunchScreen.storyboard */; };
+		B1AB6CF81CA8A8DC008C67FB /* CommentsTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CF71CA8A8DC008C67FB /* CommentsTableViewController.m */; };
+		B1AB6CFB1CA8A8E2008C67FB /* CommentCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CF91CA8A8E2008C67FB /* CommentCell.m */; };
+		B1AB6CFF1CA8A8EF008C67FB /* TagTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6CFD1CA8A8EF008C67FB /* TagTableView.m */; };
+		B1AB6D001CA8A8EF008C67FB /* SmallUserTableCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6CFE1CA8A8EF008C67FB /* SmallUserTableCell.xib */; };
+		B1AB6D1D1CA8AA97008C67FB /* TopBottomBorderView.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D1B1CA8AA97008C67FB /* TopBottomBorderView.m */; };
+		B1AB6D201CA8AAD2008C67FB /* NSDate+PrettyDate.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D1F1CA8AAD2008C67FB /* NSDate+PrettyDate.m */; };
+		B1AB6D231CA8AB34008C67FB /* CustomColoredLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D221CA8AB34008C67FB /* CustomColoredLabel.m */; };
+		B1AB6D261CA8AB5E008C67FB /* TTTAttributedLabel.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D241CA8AB5E008C67FB /* TTTAttributedLabel.m */; };
+		B1AB6D2E1CA8B3A4008C67FB /* noPpic.png in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6D2B1CA8B3A4008C67FB /* noPpic.png */; };
+		B1AB6D2F1CA8B3A4008C67FB /* noPpic@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6D2C1CA8B3A4008C67FB /* noPpic@2x.png */; };
+		B1AB6D301CA8B3A4008C67FB /* noPpic@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6D2D1CA8B3A4008C67FB /* noPpic@3x.png */; };
+		B1AB6D3A1CA8B703008C67FB /* SmallUserCellView.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D351CA8B703008C67FB /* SmallUserCellView.m */; };
+		B1AB6D3C1CA8B703008C67FB /* SmallUserTableCell.m in Sources */ = {isa = PBXBuildFile; fileRef = B1AB6D391CA8B703008C67FB /* SmallUserTableCell.m */; };
+		B1AB6D3F1CA8B8DB008C67FB /* followingArray.json in Resources */ = {isa = PBXBuildFile; fileRef = B1AB6D3E1CA8B8DB008C67FB /* followingArray.json */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,12 +33,34 @@
 		B1AB6CDF1CA8A7D6008C67FB /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		B1AB6CE11CA8A7D6008C67FB /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		B1AB6CE21CA8A7D6008C67FB /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		B1AB6CE41CA8A7D6008C67FB /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		B1AB6CE51CA8A7D6008C67FB /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		B1AB6CE81CA8A7D6008C67FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		B1AB6CEA1CA8A7D6008C67FB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B1AB6CED1CA8A7D6008C67FB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		B1AB6CEF1CA8A7D6008C67FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B1AB6CF61CA8A8DC008C67FB /* CommentsTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommentsTableViewController.h; sourceTree = "<group>"; };
+		B1AB6CF71CA8A8DC008C67FB /* CommentsTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CommentsTableViewController.m; sourceTree = "<group>"; };
+		B1AB6CF91CA8A8E2008C67FB /* CommentCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CommentCell.m; sourceTree = "<group>"; };
+		B1AB6CFA1CA8A8E2008C67FB /* CommentCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommentCell.h; sourceTree = "<group>"; };
+		B1AB6CFC1CA8A8EF008C67FB /* TagTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TagTableView.h; sourceTree = "<group>"; };
+		B1AB6CFD1CA8A8EF008C67FB /* TagTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TagTableView.m; sourceTree = "<group>"; };
+		B1AB6CFE1CA8A8EF008C67FB /* SmallUserTableCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SmallUserTableCell.xib; sourceTree = "<group>"; };
+		B1AB6D1A1CA8AA97008C67FB /* TopBottomBorderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TopBottomBorderView.h; sourceTree = "<group>"; };
+		B1AB6D1B1CA8AA97008C67FB /* TopBottomBorderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TopBottomBorderView.m; sourceTree = "<group>"; };
+		B1AB6D1E1CA8AAD2008C67FB /* NSDate+PrettyDate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+PrettyDate.h"; sourceTree = "<group>"; };
+		B1AB6D1F1CA8AAD2008C67FB /* NSDate+PrettyDate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+PrettyDate.m"; sourceTree = "<group>"; };
+		B1AB6D211CA8AB34008C67FB /* CustomColoredLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CustomColoredLabel.h; sourceTree = "<group>"; };
+		B1AB6D221CA8AB34008C67FB /* CustomColoredLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CustomColoredLabel.m; sourceTree = "<group>"; };
+		B1AB6D241CA8AB5E008C67FB /* TTTAttributedLabel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TTTAttributedLabel.m; sourceTree = "<group>"; };
+		B1AB6D251CA8AB5E008C67FB /* TTTAttributedLabel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TTTAttributedLabel.h; sourceTree = "<group>"; };
+		B1AB6D2A1CA8AC09008C67FB /* TagComments.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TagComments.pch; sourceTree = "<group>"; };
+		B1AB6D2B1CA8B3A4008C67FB /* noPpic.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noPpic.png; sourceTree = "<group>"; };
+		B1AB6D2C1CA8B3A4008C67FB /* noPpic@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "noPpic@2x.png"; sourceTree = "<group>"; };
+		B1AB6D2D1CA8B3A4008C67FB /* noPpic@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "noPpic@3x.png"; sourceTree = "<group>"; };
+		B1AB6D341CA8B703008C67FB /* SmallUserCellView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmallUserCellView.h; sourceTree = "<group>"; };
+		B1AB6D351CA8B703008C67FB /* SmallUserCellView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SmallUserCellView.m; sourceTree = "<group>"; };
+		B1AB6D381CA8B703008C67FB /* SmallUserTableCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SmallUserTableCell.h; sourceTree = "<group>"; };
+		B1AB6D391CA8B703008C67FB /* SmallUserTableCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SmallUserTableCell.m; sourceTree = "<group>"; };
+		B1AB6D3E1CA8B8DB008C67FB /* followingArray.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = followingArray.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,15 +93,19 @@
 		B1AB6CDD1CA8A7D6008C67FB /* TagComments */ = {
 			isa = PBXGroup;
 			children = (
+				B1AB6D401CA8DB08008C67FB /* Default profile pic */,
+				B1AB6D281CA8AB6D008C67FB /* Pretty Timestamp */,
+				B1AB6D271CA8AB62008C67FB /* Custom Colored Label */,
+				B1AB6D1C1CA8AA97008C67FB /* TopBottomBorderView */,
+				B1AB6CF51CA8A86D008C67FB /* CommentsViewController */,
 				B1AB6CE11CA8A7D6008C67FB /* AppDelegate.h */,
 				B1AB6CE21CA8A7D6008C67FB /* AppDelegate.m */,
-				B1AB6CE41CA8A7D6008C67FB /* ViewController.h */,
-				B1AB6CE51CA8A7D6008C67FB /* ViewController.m */,
 				B1AB6CE71CA8A7D6008C67FB /* Main.storyboard */,
 				B1AB6CEA1CA8A7D6008C67FB /* Assets.xcassets */,
 				B1AB6CEC1CA8A7D6008C67FB /* LaunchScreen.storyboard */,
 				B1AB6CEF1CA8A7D6008C67FB /* Info.plist */,
 				B1AB6CDE1CA8A7D6008C67FB /* Supporting Files */,
+				B1AB6D3E1CA8B8DB008C67FB /* followingArray.json */,
 			);
 			path = TagComments;
 			sourceTree = "<group>";
@@ -74,9 +113,92 @@
 		B1AB6CDE1CA8A7D6008C67FB /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				B1AB6D2A1CA8AC09008C67FB /* TagComments.pch */,
 				B1AB6CDF1CA8A7D6008C67FB /* main.m */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		B1AB6CF51CA8A86D008C67FB /* CommentsViewController */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6D421CA8DB36008C67FB /* TagTableView */,
+				B1AB6D411CA8DB31008C67FB /* Comments */,
+				B1AB6D3D1CA8B706008C67FB /* SmallUserViews */,
+			);
+			name = CommentsViewController;
+			sourceTree = "<group>";
+		};
+		B1AB6D1C1CA8AA97008C67FB /* TopBottomBorderView */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6D1A1CA8AA97008C67FB /* TopBottomBorderView.h */,
+				B1AB6D1B1CA8AA97008C67FB /* TopBottomBorderView.m */,
+			);
+			name = TopBottomBorderView;
+			path = "../../gymever-ios/gymgram";
+			sourceTree = "<group>";
+		};
+		B1AB6D271CA8AB62008C67FB /* Custom Colored Label */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6D241CA8AB5E008C67FB /* TTTAttributedLabel.m */,
+				B1AB6D251CA8AB5E008C67FB /* TTTAttributedLabel.h */,
+				B1AB6D211CA8AB34008C67FB /* CustomColoredLabel.h */,
+				B1AB6D221CA8AB34008C67FB /* CustomColoredLabel.m */,
+			);
+			name = "Custom Colored Label";
+			sourceTree = "<group>";
+		};
+		B1AB6D281CA8AB6D008C67FB /* Pretty Timestamp */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6D1E1CA8AAD2008C67FB /* NSDate+PrettyDate.h */,
+				B1AB6D1F1CA8AAD2008C67FB /* NSDate+PrettyDate.m */,
+			);
+			name = "Pretty Timestamp";
+			sourceTree = "<group>";
+		};
+		B1AB6D3D1CA8B706008C67FB /* SmallUserViews */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6CFE1CA8A8EF008C67FB /* SmallUserTableCell.xib */,
+				B1AB6D341CA8B703008C67FB /* SmallUserCellView.h */,
+				B1AB6D351CA8B703008C67FB /* SmallUserCellView.m */,
+				B1AB6D381CA8B703008C67FB /* SmallUserTableCell.h */,
+				B1AB6D391CA8B703008C67FB /* SmallUserTableCell.m */,
+			);
+			name = SmallUserViews;
+			sourceTree = "<group>";
+		};
+		B1AB6D401CA8DB08008C67FB /* Default profile pic */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6D2B1CA8B3A4008C67FB /* noPpic.png */,
+				B1AB6D2C1CA8B3A4008C67FB /* noPpic@2x.png */,
+				B1AB6D2D1CA8B3A4008C67FB /* noPpic@3x.png */,
+			);
+			name = "Default profile pic";
+			sourceTree = "<group>";
+		};
+		B1AB6D411CA8DB31008C67FB /* Comments */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6CF91CA8A8E2008C67FB /* CommentCell.m */,
+				B1AB6CFA1CA8A8E2008C67FB /* CommentCell.h */,
+				B1AB6CF61CA8A8DC008C67FB /* CommentsTableViewController.h */,
+				B1AB6CF71CA8A8DC008C67FB /* CommentsTableViewController.m */,
+			);
+			name = Comments;
+			sourceTree = "<group>";
+		};
+		B1AB6D421CA8DB36008C67FB /* TagTableView */ = {
+			isa = PBXGroup;
+			children = (
+				B1AB6CFC1CA8A8EF008C67FB /* TagTableView.h */,
+				B1AB6CFD1CA8A8EF008C67FB /* TagTableView.m */,
+			);
+			name = TagTableView;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,6 +261,11 @@
 				B1AB6CEE1CA8A7D6008C67FB /* LaunchScreen.storyboard in Resources */,
 				B1AB6CEB1CA8A7D6008C67FB /* Assets.xcassets in Resources */,
 				B1AB6CE91CA8A7D6008C67FB /* Main.storyboard in Resources */,
+				B1AB6D3F1CA8B8DB008C67FB /* followingArray.json in Resources */,
+				B1AB6D2E1CA8B3A4008C67FB /* noPpic.png in Resources */,
+				B1AB6D301CA8B3A4008C67FB /* noPpic@3x.png in Resources */,
+				B1AB6D001CA8A8EF008C67FB /* SmallUserTableCell.xib in Resources */,
+				B1AB6D2F1CA8B3A4008C67FB /* noPpic@2x.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,9 +276,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B1AB6CE61CA8A7D6008C67FB /* ViewController.m in Sources */,
+				B1AB6D201CA8AAD2008C67FB /* NSDate+PrettyDate.m in Sources */,
+				B1AB6D261CA8AB5E008C67FB /* TTTAttributedLabel.m in Sources */,
+				B1AB6D3C1CA8B703008C67FB /* SmallUserTableCell.m in Sources */,
+				B1AB6D1D1CA8AA97008C67FB /* TopBottomBorderView.m in Sources */,
+				B1AB6CFF1CA8A8EF008C67FB /* TagTableView.m in Sources */,
+				B1AB6CF81CA8A8DC008C67FB /* CommentsTableViewController.m in Sources */,
 				B1AB6CE31CA8A7D6008C67FB /* AppDelegate.m in Sources */,
+				B1AB6D3A1CA8B703008C67FB /* SmallUserCellView.m in Sources */,
+				B1AB6CFB1CA8A8E2008C67FB /* CommentCell.m in Sources */,
 				B1AB6CE01CA8A7D6008C67FB /* main.m in Sources */,
+				B1AB6D231CA8AB34008C67FB /* CustomColoredLabel.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -261,6 +396,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREFIX_HEADER = TagComments/TagComments.pch;
 				INFOPLIST_FILE = TagComments/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = gymever.TagComments;
@@ -272,6 +408,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				GCC_PREFIX_HEADER = TagComments/TagComments.pch;
 				INFOPLIST_FILE = TagComments/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = gymever.TagComments;
