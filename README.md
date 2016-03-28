@@ -1,7 +1,7 @@
 <h2>TAG COMMENTS</h2>
 
 
-Here is the code for a mechanism used in the app [GymEver](https://itunes.apple.com/ca/app/gymever/id827253499?mt=8); when users comment and tag other users. It searches and displays only the users that you are following when you type some characters after *#* or *@* .
+Here is the code for a comment mechanism used in the app [GymEver](https://itunes.apple.com/ca/app/gymever/id827253499?mt=8); when users comment and tag other users. It searches and displays only the users that you are following when you type some characters after *#* or *@* .
 
 --
 
